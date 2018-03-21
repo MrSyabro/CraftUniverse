@@ -61,7 +61,7 @@ namespace CraftUniverse {
 			Gdk.Pixbuf build_icon;
 			foreach(Build build in builds_list.values){
 				if(build.img && Launcher.settings.lNET){
-					File icon_file = File.new_for_uri(Launcher.settings.site + "icons/" + build.dir + ".png");
+					File icon_file = File.new_for_uri(Launcher.settings.site + "builds/" + build.dir + "/image.png");
 					build_icon = new Gdk.Pixbuf.from_stream_at_scale(icon_file.read(), 32, 32, true);
 				} else {
 					build_icon = new Gdk.Pixbuf.from_file_at_size(Launcher.settings.Dir + Launcher.settings.lDir + "icons/default.png", 32, 32);

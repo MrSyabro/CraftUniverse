@@ -31,6 +31,7 @@ Author: MrSyabro
     <property name="can_focus">False</property>
     <property name="type">popup</property>
     <property name="title" translatable="yes">CraftUniverse - Start</property>
+    <property name="role">craft_universe_starter</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="default_width">200</property>

@@ -40,6 +40,7 @@ Author: MrSyabro
   <template class="CraftUniverseMainWindow" parent="GtkApplicationWindow">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">CraftUniverse</property>
+    <property name="role">craft_universe_main</property>
     <property name="default_width">600</property>
     <property name="default_height">400</property>
     <property name="icon_name">/org/gnome/CraftUniverse/res/icon.png</property>
