@@ -44,77 +44,116 @@ namespace CraftUniverse {
 		async void update_files(Build build) {
 			try{
 				// Загрузка библиотек
-				info("Downlaod libraries list");
-				File server_lib_file;
-				File local_lib_file;
+				info("Checking libraries list");
 				Json.Parser parser = new Json.Parser();
-				progress_bar.set_text("Загрузка библиотек");
+				progress_bar.set_text("Проверка библиотек");
 				File libraries_json_list = File.new_for_uri(@"$(Launcher.settings.site)libraries/$(build.gameVer)$(sizeof(void*)==8 ? "64" : "32").json");
 				DataInputStream ljl_stream = new DataInputStream(yield libraries_json_list.read_async());
 				parser.load_from_data(yield ljl_stream.read_upto_async ("\0", 1, Priority.DEFAULT, null, null));
 				Json.Reader reader = new Json.Reader(parser.get_root());
-				double step = 1F / reader.count_members();
+				int ss = reader.count_members();
+				double step = 1F / ss;
+				double cp = 0F;
+				int cs = 0;
 				foreach(string lib in reader.list_members()) {
 					reader.read_member(lib); string lib_hash = reader.get_string_value(); reader.end_member();
-					local_lib_file = File.new_for_path(Launcher.settings.Dir + Launcher.settings.lDir + "libraries/" + lib);
+					File local_lib_file = File.new_for_path(Launcher.settings.Dir + Launcher.settings.lDir + "libraries/" + lib);
 					if (!local_lib_file.query_exists() || (lib_hash != yield hash_sum(local_lib_file))){
 						if (local_lib_file.query_exists()) warning("Bad hash, downloading: " + lib);
 						progress_bar.set_text(lib);
-						server_lib_file = File.new_for_uri(Launcher.settings.site + "libraries/" + lib);
+						File server_lib_file = File.new_for_uri(Launcher.settings.site + "libraries/" + lib);
 						yield server_lib_file.copy_async(local_lib_file, FileCopyFlags.OVERWRITE, Priority.DEFAULT, null, (current_num_bytes, total_num_bytes) => {
-							progress_bar.set_fraction(progress_bar.get_fraction() + step / ((double)current_num_bytes / (double)total_num_bytes));
+							progress_bar.set_fraction(cp + step * (double)current_num_bytes / (double)total_num_bytes);
 						});
-					} else progress_bar.set_fraction(progress_bar.get_fraction() + step);
+					}
+					cp = cp + step;
+					progress_bar.set_fraction(cp);
+					progress_bar.set_text(@"Проверка библиотек $(cs++)/$ss");
 				}
 				progress_bar.set_fraction(0);
+			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
 
+			try{
 				// Загрузка ресурсов игры
-				info("Downloading assets list");
+				info("Checking assets list");
 				Soup.Session update_session = new Soup.Session();
-				Soup.Request lib_request;
-				File local_asset_file;
-				InputStream lib_is;
-				File asset_dir;
-				progress_bar.set_text("Загрузка ресурсов");
-				update_session.use_thread_context = true;
-				parser = new Json.Parser();
+				Soup.Request asset_request;
+				//InputStream asset_is;
+				progress_bar.set_text("Проверка ресурсов");
+				Json.Parser parser = new Json.Parser();
 				File assets_json_list = File.new_for_uri(@"$(Launcher.settings.site)assets/indexes/$(build.assets).json");
+				var ind_dir = File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)assets/indexes/");
+				if (!ind_dir.query_exists()) ind_dir.make_directory_with_parents();
+				yield assets_json_list.copy_async(File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)assets/indexes/$(build.assets).json"), FileCopyFlags.OVERWRITE, Priority.DEFAULT, null, null);
 				DataInputStream ajl_stream = new DataInputStream(yield assets_json_list.read_async());
 				parser.load_from_data(yield ajl_stream.read_upto_async("\0", 1, Priority.DEFAULT, null, null));
-				reader = new Json.Reader(parser.get_root());
+				Json.Reader reader = new Json.Reader(parser.get_root());
 				reader.read_member("objects");
-				step = 1F / reader.count_members();
+				int ss = reader.count_members();
+				double step = 1F / ss;
+				double cp = 0F;
+				int cs = 0;
 				foreach(string asset in reader.list_members()) {
 					reader.read_member(asset);
 					reader.read_member("hash"); string asset_hash = reader.get_string_value(); reader.end_member();
 					reader.end_member();
-					local_asset_file = File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)assets/objects/$(asset_hash.substring(0, 2))/$asset_hash");
-					asset_dir = File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)assets/objects/$(asset_hash.substring(0, 2))/");
+					File local_asset_file = File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)assets/objects/$(asset_hash.substring(0, 2))/$asset_hash");
+					File asset_dir = File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)assets/objects/$(asset_hash.substring(0, 2))/");
 					if (!asset_dir.query_exists()) { asset_dir.make_directory_with_parents(); }
 					if (!local_asset_file.query_exists() || (asset_hash != yield hash_sum(local_asset_file))){
-						lib_request = update_session.request(@"$(Launcher.settings.site)assets/objects/$(asset_hash.substring(0, 2))/$asset_hash.asset");
-						lib_is = yield lib_request.send_async(null);
+						asset_request = update_session.request(@"$(Launcher.settings.site)assets/objects/$(asset_hash.substring(0, 2))/$asset_hash.asset");
+						InputStream asset_is = yield asset_request.send_async(null);
 						if (local_asset_file.query_exists()) { yield local_asset_file.delete_async(); warning(@"Bad hash, downloading: $asset"); }
-						yield (yield local_asset_file.create_async(FileCreateFlags.REPLACE_DESTINATION)).splice_async(lib_is, OutputStreamSpliceFlags.CLOSE_SOURCE);
+						yield (yield local_asset_file.create_async(FileCreateFlags.REPLACE_DESTINATION)).splice_async(asset_is, OutputStreamSpliceFlags.CLOSE_SOURCE);
 					}
-					progress_bar.set_fraction(progress_bar.get_fraction() + step);
+					cp = cp + step;
+					progress_bar.set_fraction(cp);
+					progress_bar.set_text(@"Проверка ресурсов $(cs++)/$ss");
 				}
 				progress_bar.set_fraction(0);
+			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
 
+			try {
 				// Загрузка исполняемых файлов игры
-				File game_dir = File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)versions/$(build.gameVer)");
-				if (!game_dir.query_exists()) {
-					info("Download client");
-					progress_bar.set_text("Загрузка клиента");
-					game_dir.make_directory_with_parents();
-					//File game_zip = File.new_for_uri(@"$(Launcher.settings.site)versions/$(build.gameVer).zip");
-					//InputStream game_zip_is = yield game_zip.read_async();
-					Soup.Request game_zip_request = update_session.request(@"$(Launcher.settings.site)versions/$(build.gameVer).zip");
-					InputStream game_zip_is = yield game_zip_request.send_async(null);
-					ZlibDecompressor zlib_dec = new ZlibDecompressor (ZlibCompressorFormat.GZIP);
-					ConverterOutputStream gz_conv_is = new ConverterOutputStream (yield game_dir.replace_async(null, false, 0), zlib_dec);
-					message("%g", yield gz_conv_is.splice_async(game_zip_is, OutputStreamSpliceFlags.NONE));
+				info("Checking client");
+				Soup.Session update_session = new Soup.Session();
+				File server_client_file;
+				File local_client_file;
+				File local_client_dir;
+				Json.Parser parser = new Json.Parser();
+				progress_bar.set_text("Проверка клиента");
+				Soup.Message message = new Soup.Message ("POST", Launcher.settings.site + "versions/");
+				message.set_request("application/json", Soup.MemoryUse.COPY, build.gameVer.data);
+				DataInputStream client_files_is = new DataInputStream(yield update_session.send_async (message));
+				parser.load_from_data(yield client_files_is.read_upto_async ("\0", 1, Priority.DEFAULT, null, null));
+				Json.Reader reader = new Json.Reader(parser.get_root());
+				string cf_hash;
+				int ss = reader.count_members();
+				double step = 1F / ss;
+				double cp = 0F;
+				int cs = 0;
+				foreach(string cf in reader.list_members()) {
+					reader.read_member(cf); cf_hash = reader.get_string_value(); reader.end_member();
+					local_client_file = File.new_for_path(@"$(Launcher.settings.Dir)$(Launcher.settings.lDir)versions/$cf");
+					if (!local_client_file.query_exists() || (cf_hash != yield hash_sum(local_client_file))){
+						info(cf);
+						if (local_client_file.query_exists()) warning("Bad hash, downloading: " + cf);
+						server_client_file = File.new_for_uri(@"$(Launcher.settings.site)versions/$cf");
+						local_client_dir = local_client_file.get_parent();
+						if (!local_client_dir.query_exists()) local_client_dir.make_directory_with_parents();
+						yield server_client_file.copy_async(local_client_file, FileCopyFlags.OVERWRITE, Priority.DEFAULT, null, (current_num_bytes, total_num_bytes) => {
+							progress_bar.set_fraction(cp + (step * (double)current_num_bytes) / (double)total_num_bytes);
+						});
+					}
+					cp = cp + step;
+					progress_bar.set_fraction(cp);
+					progress_bar.set_text(@"Загрузка клиента $(cs++)/$ss");
 				}
+				progress_bar.set_fraction(0);
+			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
+
+			try {
+				// Загрузка модов
 			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
 		}
 

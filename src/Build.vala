@@ -35,7 +35,7 @@ namespace CraftUniverse{
 			Gee.TreeMap<string, Build> builds_list = new Gee.TreeMap<string, Build>();
 			try {
 				Soup.Session session = new Soup.Session();
-				Soup.Message message = new Soup.Message ("POST", Launcher.settings.site + "builds.php");
+				Soup.Message message = new Soup.Message ("POST", Launcher.settings.site + "builds/");
 				message.set_request("application/json", Soup.MemoryUse.COPY, """{"type":"list"}""".data);
 				DataInputStream builds_is = new DataInputStream(yield session.send_async (message));
 
