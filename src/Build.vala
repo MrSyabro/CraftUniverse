@@ -19,13 +19,13 @@
 namespace CraftUniverse{
 	class Build : Object {
 		public int id { get; set; }
-        public string name { get; set; }
-        public string dir { get; set; }
-        public string gameVer { get; set; }
-        public string assets { get; set; }
-        public bool img { get; set; }
-        public bool local { get; set; }
-        public bool zip { get; set; }
+		public string name { get; set; }
+		public string dir { get; set; }
+		public string gameVer { get; set; }
+		public string assets { get; set; }
+		public bool img { get; set; }
+		public bool local { get; set; }
+		public bool zip { get; set; }
 	}
 
 	class BuildUtils : Object {
@@ -35,7 +35,7 @@ namespace CraftUniverse{
 			Gee.TreeMap<string, Build> builds_list = new Gee.TreeMap<string, Build>();
 			try {
 				Soup.Session session = new Soup.Session();
-				Soup.Message message = new Soup.Message ("POST", Launcher.settings.site + "builds/");
+				Soup.Message message = new Soup.Message ("POST", Settings.site + "builds/");
 				message.set_request("application/json", Soup.MemoryUse.COPY, """{"type":"list"}""".data);
 				DataInputStream builds_is = new DataInputStream(yield session.send_async (message));
 

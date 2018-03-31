@@ -23,7 +23,7 @@ namespace CraftUniverse {
 		public async static UserData auth(UserData user_data){
 			try {
 				Session session = new Session();
-				Message message = new Message ("POST", Launcher.settings.site + "auth.php");
+				Message message = new Message ("POST", Settings.site + "auth.php");
 				message.set_request("application/json", MemoryUse.COPY, user_data.to_string().data);
 				DataInputStream userdata_is = new DataInputStream(yield session.send_async (message));
 
@@ -33,7 +33,7 @@ namespace CraftUniverse {
 					return null;
 				}
 
-				File user_data_file = File.new_for_path(Launcher.settings.Dir + Launcher.settings.lDir + "UserData.json");
+				File user_data_file = File.new_for_path(Launcher.settings.Dir + Settings.lDir + "UserData.json");
 				FileOutputStream udf_ios;
 				if (user_data_file.query_exists()) user_data_file.delete();
 				udf_ios = yield user_data_file.create_async (FileCreateFlags.REPLACE_DESTINATION);
@@ -41,10 +41,7 @@ namespace CraftUniverse {
 				yield udf_ios.write_async(user_data.to_string().data);
 				info("Loged wich username %s.", user_data.username);
 				return user_data;
-			} catch (Error e) {
-				error("%s", e.message);
-				return null;
-			}
+			} catch (Error e) { error("%s", e.message); }
 		}
 	}
 

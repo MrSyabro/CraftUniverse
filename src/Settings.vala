@@ -51,9 +51,9 @@ namespace CraftUniverse {
 			lAutoLogin = false;
 		}
 
-		public static Settings load() {
+		public static Settings load() throws Error {
 			Settings settings = new Settings();
-			File settings_file = File.new_for_path(settings.Dir + settings.lDir + "Settings.json");
+			File settings_file = File.new_for_path(settings.Dir + Settings.lDir + "Settings.json");
 			if (settings_file.query_exists()){
 				DataInputStream sf_dis = new DataInputStream(settings_file.read ());
 				return Json.gobject_from_data(typeof(Settings), sf_dis.read_upto("\0", 1, null)) as Settings;
@@ -62,7 +62,7 @@ namespace CraftUniverse {
 			}
 		}
 
-		public void save (){
+		public void save () throws Error {
 			File settings_file = File.new_for_path(this.Dir + lDir + "Settings.json");
 			if (settings_file.query_exists()){
 				settings_file.delete();

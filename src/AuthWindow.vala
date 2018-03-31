@@ -19,17 +19,17 @@
 using Gtk;
 
 namespace CraftUniverse {
-    [GtkTemplate (ui="/org/gnome/CraftUniverse/res/AuthWindow.ui")]
-    class AuthWindow : Dialog {
-        public static UserData user_data;
-        [GtkChild]Entry login_entry;
-        [GtkChild]Entry pass_entry;
-        [GtkChild]Button reg_button;
-        [GtkChild]Button auth_button;
-        [GtkChild]CheckButton auto_auth_chek_button;
-        [GtkChild]Spinner spinner;
+	[GtkTemplate (ui="/org/gnome/CraftUniverse/res/AuthWindow.ui")]
+	class AuthWindow : Dialog {
+		public static UserData user_data;
+		[GtkChild]Entry login_entry;
+		[GtkChild]Entry pass_entry;
+		[GtkChild]Button reg_button;
+		[GtkChild]Button auth_button;
+		[GtkChild]CheckButton auto_auth_chek_button;
+		[GtkChild]Spinner spinner;
 
-		public AuthWindow (Gtk.Application app) {
+		public AuthWindow (Gtk.Application app) throws Error {
 			set_application(app);
 			set_icon(new Gdk.Pixbuf.from_resource("/org/gnome/CraftUniverse/res/icon.png"));
 			show.connect(auth_window_show);
@@ -38,9 +38,9 @@ namespace CraftUniverse {
 			auto_auth_chek_button.set_active(Launcher.settings.lAutoLogin);
 		}
 
-        public void auth_window_show(){
+		public void auth_window_show(){
 			try {
-				File user_data_file = File.new_for_path(Launcher.settings.Dir + Launcher.settings.lDir + "UserData.json");
+				File user_data_file = File.new_for_path(Launcher.settings.Dir + Settings.lDir + "UserData.json");
 				FileInputStream udf_is;
 				MainLoop auth_ml = new MainLoop();
 				if (user_data_file.query_exists() && Launcher.settings.lAutoLogin){
@@ -53,29 +53,29 @@ namespace CraftUniverse {
 						close();
 						auth_ml.quit();
 					});
-		      	} else { set_sensitive(true); spinner.active = false; }
-          	} catch (Error e) { error(e.message); set_sensitive(true); }
-        }
+				  } else { set_sensitive(true); spinner.active = false; }
+			  } catch (Error e) { error(e.message); }
+		}
 
-        public void auth_button_click(){
-            set_sensitive(false);
-            spinner.active = true;
-            user_data = new UserData();
-            user_data.username = login_entry.text;
-            user_data.password = pass_entry.text;
-            MainLoop auth_ml = new MainLoop();
-            User.auth.begin(user_data, (obj, res) => {
-            	user_data = User.auth.end(res);
-            	Launcher.main_window.show_all();
+		public void auth_button_click() {
+			set_sensitive(false);
+			spinner.active = true;
+			user_data = new UserData();
+			user_data.username = login_entry.text;
+			user_data.password = pass_entry.text;
+			MainLoop auth_ml = new MainLoop();
+			User.auth.begin(user_data, (obj, res) => {
+				user_data = User.auth.end(res);
+				Launcher.main_window.show_all();
 				close();
-            	auth_ml.quit();
-            });
-            Launcher.settings.lAutoLogin = auto_auth_chek_button.active;
-            Launcher.settings.save();
-        }
+				auth_ml.quit();
+			});
+			Launcher.settings.lAutoLogin = auto_auth_chek_button.active;
+			Launcher.settings.save();
+		}
 
-        public void reg_button_click(){
+		public void reg_button_click(){
 
-        }
-    }
+		}
+	}
 }

@@ -29,9 +29,10 @@ namespace CraftUniverse {
 		public static MainWindow main_window;
 
 		protected override void activate () {
+			try {
 			settings = Settings.load();
-			if (!FileUtils.test(settings.Dir + settings.lDir, FileTest.IS_DIR)) {
-				File.new_for_path(settings.Dir + settings.lDir).make_directory();
+			if (!FileUtils.test(settings.Dir + Settings.lDir, FileTest.IS_DIR)) {
+				File.new_for_path(settings.Dir + Settings.lDir).make_directory();
 			}
 			AuthWindow auth_window = new AuthWindow(this);
 			main_window = new MainWindow(this);
@@ -40,6 +41,7 @@ namespace CraftUniverse {
 			auth_window.show_all();
 
 			add_window(main_window);
+			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
 		}
 	}
 
