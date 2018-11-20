@@ -23,17 +23,7 @@ namespace CraftUniverse {
 	class MainWindow : ApplicationWindow {
 		[GtkChild]IconView builds_IconView;
 		[GtkChild]Gtk.ListStore builds_ListStore;
-		[GtkChild]Entry jRAM_Entry;
-		[GtkChild]Entry jArg_Entry;
-		[GtkChild]Entry jPath_Entry;
-		[GtkChild]CheckButton jShowConsole_CheckButton;
-		[GtkChild]Entry mMainClass_Entry;
-		[GtkChild]CheckButton mForge_CheckButton;
-		[GtkChild]CheckButton lBuildSync_CheckButton;
-		[GtkChild]CheckButton lAutoClose_CheckButton;
-		[GtkChild]CheckButton lAutoLogin_CheckButton;
-		[GtkChild]Button save_Button;
-		[GtkChild]Button cancell_Button;
+
 		TreeIter iter;
 		Gee.TreeMap<string, Build> builds_list;
 
@@ -44,14 +34,10 @@ namespace CraftUniverse {
 			builds_IconView.set_text_column (1);
 			show.connect(main_window_show);
 			builds_IconView.item_activated.connect(builds_list_activate);
-			save_Button.clicked.connect(save_Button_click);
-			cancell_Button.clicked.connect(cancell_Button_click);
 		}
 
 		public void main_window_show() {
 			try{
-				show_settings();
-
 				MainLoop builds_ml = new MainLoop();
 				BuildUtils.load_builds.begin((obj, res) => {
 					builds_list = BuildUtils.load_builds.end(res);
@@ -80,42 +66,6 @@ namespace CraftUniverse {
 			builds_ListStore.get_iter(out iter, path);
 			builds_ListStore.get_value(iter, 2, out b_dir);
 			starter.start_game(builds_list[(string)b_dir]);
-		}
-
-		public void save_Button_click(){
-			// Сохранение настроек
-			Launcher.settings.jRAM = jRAM_Entry.get_text();
-			Launcher.settings.jArg = jArg_Entry.get_text();
-			Launcher.settings.jPath = jPath_Entry.get_text();
-			Launcher.settings.jShowClonsole = jShowConsole_CheckButton.get_active();
-
-			Launcher.settings.mMainClass = mMainClass_Entry.get_text();
-			Launcher.settings.jShowClonsole = jShowConsole_CheckButton.get_active();
-
-			Launcher.settings.lBuildSync = lBuildSync_CheckButton.get_active();
-			Launcher.settings.lAutoClose = lAutoClose_CheckButton.get_active();
-			Launcher.settings.lAutoLogin = lAutoLogin_CheckButton.get_active();
-
-			Launcher.settings.save();
-		}
-
-		public void cancell_Button_click(){
-			// Отмена изменения настроек
-			show_settings();
-		}
-
-		void show_settings(){
-			jRAM_Entry.set_text(Launcher.settings.jRAM);
-			jArg_Entry.set_text(Launcher.settings.jArg);
-			jPath_Entry.set_text(Launcher.settings.jPath);
-			jShowConsole_CheckButton.set_active(Launcher.settings.jShowClonsole);
-
-			mMainClass_Entry.set_text(Launcher.settings.mMainClass);
-			mForge_CheckButton.set_active(Launcher.settings.mForge);
-
-			lBuildSync_CheckButton.set_active(Launcher.settings.lBuildSync);
-			lAutoClose_CheckButton.set_active(Launcher.settings.lAutoClose);
-			lAutoLogin_CheckButton.set_active(Launcher.settings.lAutoLogin);
 		}
 	}
 }

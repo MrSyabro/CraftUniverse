@@ -38,9 +38,10 @@ namespace CraftUniverse{
 				Soup.Message message = new Soup.Message ("POST", Settings.site + "builds/");
 				message.set_request("application/json", Soup.MemoryUse.COPY, """{"type":"list"}""".data);
 				DataInputStream builds_is = new DataInputStream(yield session.send_async (message));
+				string json_string = yield builds_is.read_upto_async ("\0", 1, Priority.DEFAULT, null, null);
 
 				Json.Parser parser = new Json.Parser();
-				parser.load_from_data(yield builds_is.read_upto_async ("\0", 1, Priority.DEFAULT, null, null));
+				parser.load_from_data(json_string.to_ascii());
 				Json.Reader reader = new Json.Reader(parser.get_root());
 				Json.Object root_object = parser.get_root().get_object();
 				foreach(string dir in reader.list_members()) {

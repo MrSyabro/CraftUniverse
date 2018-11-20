@@ -4,6 +4,7 @@
 		<file preprocess="xml-stripblanks" compressed="true">res/AuthWindow.ui</file>
 		<file preprocess="xml-stripblanks" compressed="true">res/MainWindow.ui</file>
 		<file preprocess="xml-stripblanks" compressed="true">res/StarterWindow.ui</file>
+	  <file preprocess="xml-stripblanks" compressed="true">res/SettingsWindow.ui</file>
 		<file>res/icon.png</file>
 	</gresource>
 </gresources>

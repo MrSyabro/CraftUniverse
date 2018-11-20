@@ -2,6 +2,7 @@ craftuniverse_sources = [
   'main.vala',
   'AuthWindow.vala',
   'MainWindow.vala',
+  'SettingsWindow.vala',
   'StarterWindow.vala',
   'User.vala',
   'Settings.vala',

@@ -31,18 +31,42 @@ namespace CraftUniverse {
 		public void start_game(Build _build) {
 			show_all();
 
+            string libraries = "";
 			MainLoop update_build_ml = new MainLoop();
 			update_files.begin(_build, (obj, res) => {
-				update_files.end(res);
+				libraries = update_files.end(res);
 				update_build_ml.quit();
 				info("End of update");
 				close();
 			});
 			update_build_ml.run();
+
+			Pid child_pid;
+
+            string[] args = {"java", "-Xmx" + Launcher.settings.jRAM, // Дополнительные аргументы и RAM
+                    "-Dfml.ignoreInvalidMinecraftCertificates=true", "-Dfml.ignorePatchDiscrepancies=true", // Обязытельные аргументы
+                    @"-Djava.library.path=$(Launcher.settings.Dir)$(Settings.lDir)versions/$(_build.gameVer)/natives", // Путь к папке natives
+                    "-cp", @"$libraries$(Launcher.settings.Dir)$(Settings.lDir)versions/$(_build.gameVer)/minecraft.jar", // Список файлов библиотек и исполняемый файл
+                    "net.minecraft.launchwrapper.Launch", "--tweakClass", "cpw.mods.fml.common.launcher.FMLTweaker",
+                    "--version", _build.gameVer, "--gameDir", @"$(Launcher.settings.Dir)$(Settings.lDir)builds/$(_build.dir)/", // Версия, путь к папке игры
+                    "--assetsDir", @"$(Launcher.settings.Dir)$(Settings.lDir)assets/", "--assetIndex", _build.assets, // Ресурсы
+                    "--accessToken", AuthWindow.user_data.accessToken, "--uuid", AuthWindow.user_data.uuid, "--userProperties", "[]", "--userType", "majang", // Ключи
+                    "--username", AuthWindow.user_data.username // Имя игрока
+            };
+
+            Process.spawn_async(@"$(Launcher.settings.Dir)$(Settings.lDir)builds/$(_build.dir)/", args, Environ.get (), SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out child_pid);
+            MainLoop game_loop = new MainLoop();
+            ChildWatch.add (child_pid, (pid, status) => {
+			    // Triggered when the child indicated by child_pid exits
+			    Process.close_pid (pid);
+			    game_loop.quit ();
+		    });
+
+		    game_loop.run ();
 		}
 
-		async void update_files(Build build) {
-			StringBuilder libraries = new StringBuilder();
+		async string update_files(Build build) {
+		    StringBuilder libraries = new StringBuilder();
 			try{
 				// Загрузка библиотек
 				info("Checking libraries list");
@@ -67,7 +91,7 @@ namespace CraftUniverse {
 							progress_bar.set_fraction(cp + step * (double)current_num_bytes / (double)total_num_bytes);
 						});
 					}
-					libraries.append(@"\"$lib\";");
+					libraries.append(@"$(Launcher.settings.Dir)$(Settings.lDir)libraries/$lib:");
 					cp = cp + step;
 					progress_bar.set_fraction(cp);
 					progress_bar.set_text(@"Проверка библиотек $(cs++)/$ss");
@@ -210,6 +234,7 @@ namespace CraftUniverse {
 
 
 			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
+			return libraries.str;
 		}
 
 		private async string hash_sum(File file) throws Error {
