@@ -19,17 +19,15 @@
 using Gtk;
 
 namespace CraftUniverse {
-	[GtkTemplate (ui="/org/gnome/CraftUniverse/res/SettingsWindow.ui")]
+	[GtkTemplate (ui="/org/gnome/CraftUniverse/ui/SettingsWindow.ui")]
 	class SettingsWindow : Dialog {
-        [GtkChild]ComboBox jRAM_ComboBox;
+        [GtkChild]SpinButton jRAM_SpinButton;
 		[GtkChild]Entry jArg_Entry;
 		[GtkChild]Entry jPath_Entry;
-		[GtkChild]CheckButton jShowConsole_CheckButton;
-		[GtkChild]Entry mMainClass_Entry;
-		[GtkChild]CheckButton mForge_CheckButton;
-		[GtkChild]CheckButton lBuildSync_CheckButton;
-		[GtkChild]CheckButton lAutoClose_CheckButton;
-		[GtkChild]CheckButton lAutoLogin_CheckButton;
+		[GtkChild]Switch jShowConsole_Switch;
+		[GtkChild]Switch lBuildSync_Switch;
+		[GtkChild]Switch lAutoClose_Switch;
+		[GtkChild]Switch lAutoLogin_Switch;
 		[GtkChild]Button save_Button;
 		[GtkChild]Button cancell_Button;
 
@@ -38,43 +36,39 @@ namespace CraftUniverse {
 			set_icon(new Gdk.Pixbuf.from_resource("/org/gnome/CraftUniverse/res/icon.png"));
             save_Button.clicked.connect(save_Button_click);
 			cancell_Button.clicked.connect(cancell_Button_click);
+			show.connect(show_settings);
 		}
 
 
 		void show_settings(){
-			//jRAM_ComboBox.set_text(Launcher.settings.jRAM);
+			jRAM_SpinButton.set_value(Launcher.settings.jRAM);
 			jArg_Entry.set_text(Launcher.settings.jArg);
 			jPath_Entry.set_text(Launcher.settings.jPath);
-			jShowConsole_CheckButton.set_active(Launcher.settings.jShowClonsole);
+			jShowConsole_Switch.set_active(Launcher.settings.jShowClonsole);
 
-			mMainClass_Entry.set_text(Launcher.settings.mMainClass);
-			mForge_CheckButton.set_active(Launcher.settings.mForge);
-
-			lBuildSync_CheckButton.set_active(Launcher.settings.lBuildSync);
-			lAutoClose_CheckButton.set_active(Launcher.settings.lAutoClose);
-			lAutoLogin_CheckButton.set_active(Launcher.settings.lAutoLogin);
+			lBuildSync_Switch.set_active(Launcher.settings.lBuildSync);
+			lAutoClose_Switch.set_active(Launcher.settings.lAutoClose);
+			lAutoLogin_Switch.set_active(Launcher.settings.lAutoLogin);
 		}
 
 		public void save_Button_click(){
 			// Сохранение настроек
-			//Launcher.settings.jRAM = jRAM_Entry.get_text();
+			Launcher.settings.jRAM = jRAM_SpinButton.get_value_as_int();
 			Launcher.settings.jArg = jArg_Entry.get_text();
 			Launcher.settings.jPath = jPath_Entry.get_text();
-			Launcher.settings.jShowClonsole = jShowConsole_CheckButton.get_active();
+			Launcher.settings.jShowClonsole = jShowConsole_Switch.active;
 
-			Launcher.settings.mMainClass = mMainClass_Entry.get_text();
-			Launcher.settings.jShowClonsole = jShowConsole_CheckButton.get_active();
-
-			Launcher.settings.lBuildSync = lBuildSync_CheckButton.get_active();
-			Launcher.settings.lAutoClose = lAutoClose_CheckButton.get_active();
-			Launcher.settings.lAutoLogin = lAutoLogin_CheckButton.get_active();
+			Launcher.settings.lBuildSync = lBuildSync_Switch.active;
+			Launcher.settings.lAutoClose = lAutoClose_Switch.active;
+			Launcher.settings.lAutoLogin = lAutoLogin_Switch.active;
 
 			Launcher.settings.save();
+			close();
 		}
 
 		public void cancell_Button_click(){
 			// Отмена изменения настроек
-			show_settings();
+			close();
 		}
 	}
 }

@@ -19,7 +19,7 @@
 using Gtk;
 
 namespace CraftUniverse {
-	[GtkTemplate (ui="/org/gnome/CraftUniverse/res/AuthWindow.ui")]
+	[GtkTemplate (ui="/org/gnome/CraftUniverse/ui/AuthWindow.ui")]
 	class AuthWindow : Dialog {
 		public static UserData user_data;
 		[GtkChild]Entry login_entry;
@@ -30,8 +30,7 @@ namespace CraftUniverse {
 		[GtkChild]Spinner spinner;
 
 		public AuthWindow (Gtk.Application app) throws Error {
-			set_application(app);
-			set_icon(new Gdk.Pixbuf.from_resource("/org/gnome/CraftUniverse/res/icon.png"));
+			Object (application: app);
 			show.connect(auth_window_show);
 			auth_button.clicked.connect(auth_button_click);
 			reg_button.clicked.connect(reg_button_click);
@@ -40,10 +39,12 @@ namespace CraftUniverse {
 
 		public void auth_window_show(){
 			try {
-				File user_data_file = File.new_for_path(Launcher.settings.Dir + Settings.lDir + "UserData.json");
+				File user_data_file = File.new_for_path(Launcher.settings.Dir +
+				    Settings.lDir + "UserData.json");
 				FileInputStream udf_is;
 				MainLoop auth_ml = new MainLoop();
-				if (user_data_file.query_exists() && Launcher.settings.lAutoLogin){
+				if (user_data_file.query_exists() && Launcher.settings.lAutoLogin)
+				{
 					udf_is = user_data_file.read ();
 					DataInputStream udf_dis = new DataInputStream(udf_is);
 					user_data = Json.gobject_from_data(typeof(UserData), udf_dis.read_upto("\0", 1, null)) as UserData;

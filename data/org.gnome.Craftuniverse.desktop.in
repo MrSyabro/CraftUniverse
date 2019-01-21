@@ -1,7 +1,9 @@
 [Desktop Entry]
-Name=craftuniverse
+Name=CraftUniverse
 Exec=craftuniverse
+GenericName=Minecraft launcher
+Icon=@icon@
 Terminal=false
 Type=Application
-Categories=GTK;
+Categories=GNOME;GTK;Player;Game;Sandbox;
 StartupNotify=true

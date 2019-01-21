@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 
+
+Copyright (C) 
+
+This file is part of CraftUniverse.
+
+CraftUniverse is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+CraftUniverse is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CraftUniverse.  If not, see <http://www.gnu.org/licenses/>.
+
+Author: MrSyabro
+
+-->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name CraftUniverse -->
+  <!-- interface-description Minecraft Launcher -->
+  <!-- interface-authors MrSyabro -->
+  <object class="GtkMenu" id="build_menu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="delete_build_MenuItem">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Удалить</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+  </object>
+  <object class="GtkListStore" id="builds_ListStore">
+    <columns>
+      <!-- column-name icon -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name id -->
+      <column type="gchararray"/>
+      <!-- column-name progress -->
+      <column type="gboolean"/>
+      <!-- column-name hint -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="installed_builds_ListStore">
+    <columns>
+      <!-- column-name icon -->
+      <column type="GdkPixbuf"/>
+      <!-- column-name name -->
+      <column type="gchararray"/>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkMenu" id="main_menu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="tearoff_title">Управление сборками</property>
+    <child>
+      <object class="GtkMenuItem" id="settings_MenuItem">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Параметры</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="about_MenuItem">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">О программе</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+  </object>
+  <template class="CraftUniverseMainWindow" parent="GtkApplicationWindow">
+    <property name="name">CraftUniverse</property>
+    <property name="can_focus">True</property>
+    <property name="role">craft_universe_main</property>
+    <property name="default_width">1280</property>
+    <property name="default_height">720</property>
+    <property name="icon">../icon/icon.png</property>
+    <property name="has_resize_grip">True</property>
+    <property name="startup_id">CraftUniverse - Ланучер</property>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="headerbar">
+        <property name="name">MainWindowHeaderBar</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="spacing">0</property>
+        <property name="show_close_button">True</property>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="layout_style">center</property>
+            <child>
+              <object class="GtkButton" id="add_build_Button">
+                <property name="label">gtk-add</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="relief">half</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkMenuButton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="relief">half</property>
+                <property name="popup">build_menu</property>
+                <property name="align_widget">headerbar</property>
+                <property name="use_popover">False</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
+            <style>
+              <class name="linked"/>
+            </style>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child type="title">
+          <object class="GtkStackSwitcher" id="builds_IconView_Switcher">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="draw_indicator">True</property>
+            <property name="popup">main_menu</property>
+            <property name="align_widget">headerbar</property>
+            <property name="use_popover">False</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">open-menu-symbolic</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkInfoBar" id="info_bar">
+            <property name="width_request">180</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="revealed">False</property>
+            <child internal-child="action_area">
+              <object class="GtkButtonBox">
+                <property name="can_focus">False</property>
+                <property name="spacing">6</property>
+                <property name="layout_style">end</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child internal-child="content_area">
+              <object class="GtkBox">
+                <property name="can_focus">False</property>
+                <property name="spacing">16</property>
+                <child>
+                  <object class="GtkProgressBar" id="progress_bar">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="show_text">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStack" id="stack1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkIconView" id="builds_IconView">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="margin">6</property>
+                <property name="model">builds_ListStore</property>
+                <property name="item_width">16</property>
+                <property name="spacing">3</property>
+                <property name="tooltip_column">4</property>
+                <child>
+                  <object class="GtkCellRendererPixbuf" id="icon"/>
+                  <attributes>
+                    <attribute name="pixbuf">0</attribute>
+                  </attributes>
+                </child>
+                <child>
+                  <object class="GtkCellRendererText" id="name">
+                    <property name="alignment">center</property>
+                  </object>
+                  <attributes>
+                    <attribute name="text">1</attribute>
+                  </attributes>
+                </child>
+                <child>
+                  <object class="GtkCellRendererSpinner" id="progress"/>
+                  <attributes>
+                    <attribute name="active">3</attribute>
+                  </attributes>
+                </child>
+              </object>
+              <packing>
+                <property name="name">builds</property>
+                <property name="title" translatable="yes">Все</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkIconView" id="installed_builds_IconView">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="margin">6</property>
+                <property name="model">installed_builds_ListStore</property>
+                <property name="tooltip_column">2</property>
+                <child>
+                  <object class="GtkCellRendererText" id="icon1"/>
+                  <attributes>
+                    <attribute name="text">0</attribute>
+                  </attributes>
+                </child>
+                <child>
+                  <object class="GtkCellRendererText" id="name1"/>
+                  <attributes>
+                    <attribute name="text">1</attribute>
+                  </attributes>
+                </child>
+              </object>
+              <packing>
+                <property name="name">installed_builds</property>
+                <property name="title" translatable="yes">Установленные</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

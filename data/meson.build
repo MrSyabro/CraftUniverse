@@ -39,3 +39,8 @@ if compile_schemas.found()
     args: ['--strict', '--dry-run', meson.current_source_dir()]
   )
 endif
+
+resources = gnome.compile_resources('CraftUniverse',
+  'craftuniverse.gresource.xml',
+  c_name: 'resources'
+)

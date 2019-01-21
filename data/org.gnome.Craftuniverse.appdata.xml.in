@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
+<component type="desktop-application">
 	<id>org.gnome.Craftuniverse.desktop</id>
 	<licence>CC0</licence>
+  <project_license>GPL-3.0+</project_license>
+  <name>CraftUniverse</name>
+  <summary>Улучшенный лаунчер Minecraft</summary>
 	<description>
+	  Minecraft launcher.Лаунчер позволяющий хранить и запускать разные сборки на разных версиях игры.
 	</description>
 </component>
+

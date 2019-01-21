@@ -29,7 +29,7 @@ namespace CraftUniverse{
 	}
 
 	class BuildUtils : Object {
-		public async static Gee.TreeMap<string, Build> load_builds () {
+		public async static Gee.TreeMap<string, Build> global_builds () {
 			// Загрузка списка сборок
 			info("Builds list download...");
 			Gee.TreeMap<string, Build> builds_list = new Gee.TreeMap<string, Build>();
@@ -49,8 +49,18 @@ namespace CraftUniverse{
 					builds_list.@set(dir, build);
 				}
 			} catch (Error e) { error(e.message); }
-
 			return builds_list;
+		}
+
+		public async static Gee.TreeMap<string, Build> read_builds () {
+            info("Builds list reading...");
+			Gee.TreeMap<string, Build> builds_list = new Gee.TreeMap<string, Build>();
+
+            try {
+
+            } catch (Error e) { error(e.message); }
+
+		    return builds_list;
 		}
 	}
 }

@@ -19,7 +19,7 @@
 namespace CraftUniverse {
 	class Settings : Object {
 		// Настройка JVM
-		public string jRAM { get; set; }
+		public int jRAM { get; set; }
 		public string jArg { get; set; }
 		public string jPath { get; set; }
 		public bool jShowClonsole { get; set; }
@@ -38,13 +38,10 @@ namespace CraftUniverse {
 
 		public Settings() {
 			// Настройка JVM
-			jRAM = "1G";
+			jRAM = 1024;
 			jArg = "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy -Xmn128M";
 			jPath = "";
 			jShowClonsole = false;
-			// Конфигурации запуска Minecraft
-			mMainClass = "net.minecraft.launchwrapper.Launch";
-			mForge = true;
 			// Конфигурации лаунчера
 			lBuildSync = true;
 			lAutoClose = false;

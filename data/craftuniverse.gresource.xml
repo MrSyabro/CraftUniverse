@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+	<gresource prefix="/org/gnome/CraftUniverse">
+		<file preprocess="xml-stripblanks" compressed="true">ui/AuthWindow.ui</file>
+		<file preprocess="xml-stripblanks" compressed="true">ui/MainWindow.ui</file>
+		<file preprocess="xml-stripblanks" compressed="true">ui/StarterWindow.ui</file>
+		<file preprocess="xml-stripblanks" compressed="true">ui/SettingsWindow.ui</file>
+	  <file preprocess="xml-stripblanks" compressed="true">ui/AboutWindow.ui</file>
+		<file>icon/icon.png</file>
+	</gresource>
+</gresources>

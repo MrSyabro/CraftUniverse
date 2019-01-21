@@ -1,4 +1,4 @@
-/* StartWindow.vala
+/* MainWindow.vala
  *
  * Copyright (C) 2018 MrSyabro
  *
@@ -19,53 +19,114 @@
 using Gtk;
 
 namespace CraftUniverse {
-	[GtkTemplate (ui="/org/gnome/CraftUniverse/res/StarterWindow.ui")]
-	class StarterWindow : ApplicationWindow {
+	[GtkTemplate (ui="/org/gnome/CraftUniverse/ui/MainWindow.ui")]
+	class MainWindow : ApplicationWindow {
+		[GtkChild]IconView builds_IconView;
+		[GtkChild]Gtk.MenuItem settings_MenuItem;
+		[GtkChild]Gtk.MenuItem about_MenuItem;
+		[GtkChild]Button add_build_Button;
+		[GtkChild]Gtk.ListStore builds_ListStore;
+		[GtkChild]Gtk.ListStore installed_builds_ListStore;
+		[GtkChild]InfoBar info_bar;
 		[GtkChild]ProgressBar progress_bar;
 
-		public StarterWindow (Gtk.Application app) throws Error {
-			set_application(app);
-			set_icon(new Gdk.Pixbuf.from_resource("/org/gnome/CraftUniverse/res/icon.png"));
+		TreeIter iter;
+		Gee.TreeMap<string, Build> builds_list;
+		Builder builder = new Builder.from_resource("/org/gnome/CraftUniverse/ui/AboutWindow.ui");
+		Build build;
+
+		public MainWindow(Gtk.Application app) throws Error {
+			Object (application: app);
+			show.connect(main_window_show);
+			builds_IconView.item_activated.connect(builds_list_activate);
+			settings_MenuItem.activate.connect(settings_show);
+			about_MenuItem.activate.connect(about_show);
+			add_build_Button.clicked.connect(add_build_Button_click);
+			info_bar.close.connect(() => {
+			    info_bar.set_revealed(false);
+			    info_bar.set_show_close_button(false);
+			});
 		}
 
-		public void start_game(Build _build) {
-			show_all();
+		public void main_window_show() {
+			try{
+				builds_ListStore.clear();
+				MainLoop builds_ml = new MainLoop();
+				BuildUtils.global_builds.begin((obj, res) => {
+					builds_list = BuildUtils.global_builds.end(res);
+					builds_ml.quit();
+				});
+				builds_ml.run();
+
+				Gdk.Pixbuf build_icon;
+				foreach(Build build in builds_list.values){
+					if(build.img && Launcher.settings.lNET){
+						File icon_file = File.new_for_uri(Settings.site + "builds/" + build.dir + "/image.png");
+						build_icon = new Gdk.Pixbuf.from_stream_at_scale(icon_file.read(), 32, 32, true);
+					} else {
+						build_icon = new Gdk.Pixbuf.from_file_at_size(Launcher.settings.Dir + Settings.lDir + "icons/default.png", 32, 32);
+					}
+					builds_ListStore.append(out iter);
+					builds_ListStore.set(iter, 0, build_icon, 1, build.name.data, 2, build.dir.data);
+				}
+			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
+		}
+
+		public void about_show(){
+		    AboutDialog about_window = (AboutDialog)builder.get_object("CraftUniverseAboutWindow");
+		    application.add_window(about_window);
+		    about_window.show_all();
+		}
+
+		public void builds_list_activate(TreePath path) {
+			// Запуск игры
+
+            Value b_dir;
+            builds_ListStore.get_iter(out iter, path);
+            builds_ListStore.get_value(iter, 2, out b_dir);
+			build = builds_list[(string)b_dir];
+
+            info_bar.set_revealed(true);
 
             string libraries = "";
 			MainLoop update_build_ml = new MainLoop();
-			update_files.begin(_build, (obj, res) => {
+			update_files.begin((obj, res) => {
 				libraries = update_files.end(res);
 				update_build_ml.quit();
 				info("End of update");
-				close();
 			});
 			update_build_ml.run();
 
+			//info_bar.set_show_close_button (true);
+			progress_bar.set_text("Игра запускается...");
+
 			Pid child_pid;
 
-            string[] args = {"java", "-Xmx" + Launcher.settings.jRAM, // Дополнительные аргументы и RAM
+            string[] args = {"java", @"-Xmx$(Launcher.settings.jRAM)M", // Дополнительные аргументы и RAM
                     "-Dfml.ignoreInvalidMinecraftCertificates=true", "-Dfml.ignorePatchDiscrepancies=true", // Обязытельные аргументы
-                    @"-Djava.library.path=$(Launcher.settings.Dir)$(Settings.lDir)versions/$(_build.gameVer)/natives", // Путь к папке natives
-                    "-cp", @"$libraries$(Launcher.settings.Dir)$(Settings.lDir)versions/$(_build.gameVer)/minecraft.jar", // Список файлов библиотек и исполняемый файл
+                    @"-Djava.library.path=$(Launcher.settings.Dir)$(Settings.lDir)versions/$(build.gameVer)/natives", // Путь к папке natives
+                    "-cp", @"$libraries$(Launcher.settings.Dir)$(Settings.lDir)versions/$(build.gameVer)/minecraft.jar", // Список файлов библиотек и исполняемый файл
                     "net.minecraft.launchwrapper.Launch", "--tweakClass", "cpw.mods.fml.common.launcher.FMLTweaker",
-                    "--version", _build.gameVer, "--gameDir", @"$(Launcher.settings.Dir)$(Settings.lDir)builds/$(_build.dir)/", // Версия, путь к папке игры
-                    "--assetsDir", @"$(Launcher.settings.Dir)$(Settings.lDir)assets/", "--assetIndex", _build.assets, // Ресурсы
+                    "--version", build.gameVer, "--gameDir", @"$(Launcher.settings.Dir)$(Settings.lDir)builds/$(build.dir)/", // Версия, путь к папке игры
+                    "--assetsDir", @"$(Launcher.settings.Dir)$(Settings.lDir)assets/", "--assetIndex", build.assets, // Ресурсы
                     "--accessToken", AuthWindow.user_data.accessToken, "--uuid", AuthWindow.user_data.uuid, "--userProperties", "[]", "--userType", "majang", // Ключи
                     "--username", AuthWindow.user_data.username // Имя игрока
             };
 
-            Process.spawn_async(@"$(Launcher.settings.Dir)$(Settings.lDir)builds/$(_build.dir)/", args, Environ.get (), SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out child_pid);
+            Process.spawn_async(@"$(Launcher.settings.Dir)$(Settings.lDir)builds/$(build.dir)/", args, Environ.get (), SpawnFlags.SEARCH_PATH | SpawnFlags.DO_NOT_REAP_CHILD, null, out child_pid);
             MainLoop game_loop = new MainLoop();
             ChildWatch.add (child_pid, (pid, status) => {
 			    // Triggered when the child indicated by child_pid exits
 			    Process.close_pid (pid);
+			    show();
 			    game_loop.quit ();
 		    });
-
+		    info_bar.set_revealed(false);
+            hide();
 		    game_loop.run ();
 		}
 
-		async string update_files(Build build) {
+        async string update_files() {
 		    StringBuilder libraries = new StringBuilder();
 			try{
 				// Загрузка библиотек
@@ -83,7 +144,7 @@ namespace CraftUniverse {
 				foreach(string lib in reader.list_members()) {
 					reader.read_member(lib); string lib_hash = reader.get_string_value(); reader.end_member();
 					File local_lib_file = File.new_for_path(Launcher.settings.Dir + Settings.lDir + "libraries/" + lib);
-					if (!local_lib_file.query_exists() || (lib_hash != yield hash_sum(local_lib_file))){
+					if (!local_lib_file.query_exists() || (lib_hash != yield Utils.hash_sum(local_lib_file))){
 						if (local_lib_file.query_exists()) warning("Bad hash, downloading: " + lib);
 						progress_bar.set_text(lib);
 						File server_lib_file = File.new_for_uri(Settings.site + "libraries/" + lib);
@@ -125,7 +186,7 @@ namespace CraftUniverse {
 					File local_asset_file = File.new_for_path(@"$(Launcher.settings.Dir)$(Settings.lDir)assets/objects/$(asset_hash.substring(0, 2))/$asset_hash");
 					File asset_dir = File.new_for_path(@"$(Launcher.settings.Dir)$(Settings.lDir)assets/objects/$(asset_hash.substring(0, 2))/");
 					if (!asset_dir.query_exists()) { asset_dir.make_directory_with_parents(); }
-					if (!local_asset_file.query_exists() || (asset_hash != yield hash_sum(local_asset_file))){
+					if (!local_asset_file.query_exists() || (asset_hash != yield Utils.hash_sum(local_asset_file))){
 						asset_request = update_session.request(@"$(Settings.site)assets/objects/$(asset_hash.substring(0, 2))/$asset_hash.asset");
 						InputStream asset_is = yield asset_request.send_async(null);
 						if (local_asset_file.query_exists()) { yield local_asset_file.delete_async(); warning(@"Bad hash, downloading: $asset"); }
@@ -160,7 +221,7 @@ namespace CraftUniverse {
 				foreach(string cf in reader.list_members()) {
 					reader.read_member(cf); cf_hash = reader.get_string_value(); reader.end_member();
 					local_client_file = File.new_for_path(@"$(Launcher.settings.Dir)$(Settings.lDir)versions/$cf");
-					if (!local_client_file.query_exists() || (cf_hash != yield hash_sum(local_client_file))){
+					if (!local_client_file.query_exists() || (cf_hash != yield Utils.hash_sum(local_client_file))){
 						info(cf);
 						if (local_client_file.query_exists()) warning("Bad hash, downloading: " + cf);
 						server_client_file = File.new_for_uri(@"$(Settings.site)versions/$cf");
@@ -213,7 +274,7 @@ namespace CraftUniverse {
 				while ((mod_file_info = mods_files_en.next_file (null)) != null) {
 					File mod_file = File.new_for_path(@"$(Launcher.settings.Dir)$(Settings.lDir)builds/$(build.dir)/mods/$(mod_file_info.get_name())");
 					if (mod_file_info.get_file_type () != FileType.DIRECTORY)
-						if(!mods_files_list.has_key(mod_file_info.get_name()) || mods_files_list.@get(mod_file_info.get_name()) != yield hash_sum(mod_file)) {
+						if(!mods_files_list.has_key(mod_file_info.get_name()) || mods_files_list.@get(mod_file_info.get_name()) != yield Utils.hash_sum(mod_file)) {
 							yield mod_file.delete_async();
 						} else mods_files_list.unset(mod_file_info.get_name());
 				}
@@ -231,23 +292,21 @@ namespace CraftUniverse {
 					progress_bar.set_fraction(cp);
 					progress_bar.set_text(@"Проверка модов $(cs++)/$ss");
 				}
-
-
 			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
 			return libraries.str;
 		}
 
-		private async string hash_sum(File file) throws Error {
-			Checksum checksum = new Checksum (ChecksumType.SHA1);
-			var stream = yield file.read_async();
+		public void settings_show() {
+            SettingsWindow settings_window = new SettingsWindow(application);
+            application.add_window(settings_window);
+            settings_window.show_all();
+		}
 
-			uint8 fbuf[128];
-			   size_t size;
-
-			   while ((size = stream.read (fbuf)) > 0){
-				  checksum.update (fbuf, size);
-			}
-			   return checksum.get_string ();
+		public void add_build_Button_click() {
+            Notification test_not = new Notification("Test");
+            test_not.set_body("This is test notification");
+            test_not.set_priority(NotificationPriority.HIGH);
+            application.send_notification("test", test_not);
 		}
 	}
 }

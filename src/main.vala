@@ -30,17 +30,19 @@ namespace CraftUniverse {
 
 		protected override void activate () {
 			try {
-			settings = Settings.load();
-			if (!FileUtils.test(settings.Dir + Settings.lDir, FileTest.IS_DIR)) {
-				File.new_for_path(settings.Dir + Settings.lDir).make_directory();
-			}
-			AuthWindow auth_window = new AuthWindow(this);
-			main_window = new MainWindow(this);
+			    this.register();
+			    settings = Settings.load();
+			    if (!FileUtils.test(settings.Dir + Settings.lDir, FileTest.IS_DIR)) {
+				    File.new_for_path(settings.Dir + Settings.lDir).make_directory();
+			    }
 
-			add_window(auth_window);
-			auth_window.show_all();
+			    AuthWindow auth_window = new AuthWindow(this);
+			    main_window = new MainWindow(this);
 
-			add_window(main_window);
+			    add_window(auth_window);
+			    add_window(main_window);
+			    auth_window.show_all();
+
 			} catch (Error e) { error(@"$(e.code): $(e.message)"); }
 		}
 	}
